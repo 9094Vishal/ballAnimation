@@ -1,0 +1,51 @@
+
+.box {
+  border: 1px solid blue;
+  position: relative;
+}
+
+.ball {
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+}
+.obstacle{
+  background-color: black;
+  border-radius: 50%;
+  position: absolute;
+
+} 
+
+.btn{
+  display: flex;
+  gap: 5px;
+}
+
+
+.input-helper{
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.box-helper,
+.ball-helper {
+  display: flex;
+  gap: 10px;
+  /* flex-direction: column; */
+}
+label{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+input {
+  background-color: whitesmoke;
+  padding: 5px;
+  border-radius: 5px;
+}
