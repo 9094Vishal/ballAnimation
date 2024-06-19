@@ -2,17 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 
 const Anim = () => {
   let x = 0;
+  let x2 = 0;
   const [duration, setDuration] = useState(5);
   const [ballHeight, setBallHeight] = useState(20);
   const [ballWidth, setBallWidth] = useState(20);
   const [boxHeight, setBoxHeight] = useState(500);
   const [boxWidth, setBoxWidth] = useState(500);
   const [obstacles, setObstacles] = useState([{}]);
+  let position = 0;
+  let direction = 1;
   let bottom = 0;
   const ball = useRef(null);
   const obstacle = useRef(null);
 
   let animationId = useRef(null);
+  let animationId1 = useRef(null);
   let start = new Date();
   const startAnimation = () => {
     start = new Date();
@@ -46,12 +50,19 @@ const Anim = () => {
   const onBallWidthChange = (e) => {
     setBallWidth(Number(e.target.value));
   };
-  useEffect(() => {
-    obstacle.current.style.left = "480px";
-    obstacle.current.style.bottom = "200px";
-    console.log(obstacle.current.style.left);
-    console.log(ball.current.style.left);
-  }, []);
+  //   useEffect(() => {
+  //     obstacle.current.style.left = "480px";
+  //     obstacle.current.style.bottom = "200px";
+  //     console.log(obstacle.current.style.left);
+  //     console.log(ball.current.style.left);
+  //   }, []);
+  const updatePosition = () => {
+    if (ball.current) {
+      const rect = ball.current.getBoundingClientRect();
+      position = rect.left;
+      console.log(position);
+    }
+  };
   const anim = () => {
     // calculate box height and width
     let boxH = boxHeight - ballHeight;
@@ -68,6 +79,48 @@ const Anim = () => {
       (duration * 0.8) / totalTravel
     }s ease-in-out`;
 
+    console.log((duration / totalTravel) * 1000);
+    console.log((((duration * 0.8) / totalTravel) * 1000) / 48);
+    x2 = 20;
+    animationId1 = setInterval(() => {
+      if (bottom <= boxH) {
+        x2 <= 0
+          ? ((direction = 1),
+            (bottom += Math.floor(
+              (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
+            )))
+          : x2 >= 500
+          ? ((direction = -1),
+            (bottom += Math.floor(
+              (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
+            )))
+          : "";
+        console.log(x2 * direction);
+        x2 += direction * 26;
+        obstacle.current.style.left = x2 + "px";
+        setTimeout(() => {
+          if (
+            !(
+              bottom >=
+              boxH +
+                Math.floor(
+                  (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
+                )
+            )
+          )
+            obstacle.current.style.bottom = bottom + "px";
+        }, (duration / totalTravel) * 1000);
+      } else {
+        console.log(
+          `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
+        );
+        clearInterval(animationId);
+        clearInterval(animationId1);
+      }
+    }, ((duration / totalTravel) * 1000) / 25);
+    animationId1 = setInterval(() => {
+      updatePosition();
+    }, ((duration / totalTravel) * 1000) / 25);
     animationId = setInterval(() => {
       if (bottom <= boxH) {
         x == 0 ? (x = boxw) : x >= boxw ? (x = 0) : "";
@@ -84,9 +137,7 @@ const Anim = () => {
           )
             ball.current.style.bottom = bottom + "px";
         }, (duration * 0.8) / totalTravel);
-        setInterval(() => {
-          console.log("hey");
-        }, (duration * 0.8) / totalTravel);
+
         bottom += Math.floor(
           (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
         );
@@ -95,6 +146,7 @@ const Anim = () => {
           `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
         );
         clearInterval(animationId);
+        clearInterval(animationId1);
       }
     }, (duration / totalTravel) * 1000);
   };
