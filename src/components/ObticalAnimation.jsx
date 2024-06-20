@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { to } from "react-spring";
 
 const Anim = () => {
   let x = 0;
@@ -56,99 +57,79 @@ const Anim = () => {
   //     console.log(obstacle.current.style.left);
   //     console.log(ball.current.style.left);
   //   }, []);
-  const updatePosition = () => {
-    if (ball.current) {
-      const rect = ball.current.getBoundingClientRect();
-      position = rect.left;
-      console.log(position);
-    }
-  };
+
   const anim = () => {
     // calculate box height and width
     let boxH = boxHeight - ballHeight;
     let boxw = boxWidth - ballWidth;
 
     // calclulating total steps
-    let totalTravel = boxH / ballHeight + 2;
-    console.log((duration * 0.8) / totalTravel);
+    let totalMove = (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2);
+    let ratio = (boxH * boxw) / ((boxH + boxw) / 2);
+    let totalTravel = ratio / totalMove;
+    let totalInterwal = ((duration / totalTravel) * 1000) / totalTravel;
+    console.log("total move", totalMove);
+    console.log("total ratio", ratio);
+    console.log("total travel", totalTravel);
+    console.log("total interval", totalInterwal);
     console.log("start time", start.toLocaleTimeString());
 
-    ball.current.style.transition = `bottom ${
-      (duration * 0.2) / totalTravel
-    }s ease-in-out ${(duration * 0.8) / totalTravel}s, left ${
-      (duration * 0.8) / totalTravel
-    }s ease-in-out`;
-
-    console.log((duration / totalTravel) * 1000);
-    console.log((((duration * 0.8) / totalTravel) * 1000) / 48);
-    x2 = 20;
     animationId1 = setInterval(() => {
-      if (bottom <= boxH) {
-        x2 <= 0
-          ? ((direction = 1),
-            (bottom += Math.floor(
-              (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-            )))
-          : x2 >= 500
-          ? ((direction = -1),
-            (bottom += Math.floor(
-              (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-            )))
-          : "";
-        console.log(x2 * direction);
-        x2 += direction * 26;
-        obstacle.current.style.left = x2 + "px";
-        setTimeout(() => {
-          if (
-            !(
-              bottom >=
-              boxH +
-                Math.floor(
-                  (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-                )
-            )
-          )
-            obstacle.current.style.bottom = bottom + "px";
-        }, (duration / totalTravel) * 1000);
-      } else {
-        console.log(
-          `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
-        );
-        clearInterval(animationId);
-        clearInterval(animationId1);
-      }
-    }, ((duration / totalTravel) * 1000) / 25);
-    animationId1 = setInterval(() => {
-      updatePosition();
-    }, ((duration / totalTravel) * 1000) / 25);
-    animationId = setInterval(() => {
-      if (bottom <= boxH) {
-        x == 0 ? (x = boxw) : x >= boxw ? (x = 0) : "";
-        ball.current.style.left = x + "px";
-        setTimeout(() => {
-          if (
-            !(
-              bottom >=
-              boxH +
-                Math.floor(
-                  (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-                )
-            )
-          )
-            ball.current.style.bottom = bottom + "px";
-        }, (duration * 0.8) / totalTravel);
+      x2 += direction * totalMove;
+      x2 <= 0 ? (direction = 1) : x2 >= boxw ? (direction = -1) : "";
+      console.log("loop times");
 
-        bottom += Math.floor(
-          (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-        );
-      } else {
-        console.log(
-          `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
-        );
-        clearInterval(animationId);
-        clearInterval(animationId1);
+      obstacle.current.style.left = x2 + "px";
+
+      if (x2 <= 0 || x2 >= boxw) {
+        if (bottom >= boxH) {
+          console.log(
+            `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
+          );
+          clearInterval(animationId1);
+          return;
+        } else {
+          bottom += totalMove;
+          obstacle.current.style.bottom = bottom + "px";
+        }
       }
-    }, (duration / totalTravel) * 1000);
+    }, totalInterwal);
+
+    // ball.current.style.transition = `bottom ${
+    //   (duration * 0.2) / totalTravel
+    // }s ease-in-out ${(duration * 0.8) / totalTravel}s, left ${
+    //   (duration * 0.8) / totalTravel
+    // }s ease-in-out`;
+
+    //red ball
+    // animationId = setInterval(() => {
+    //   if (bottom <= boxH) {
+    //     x == 0 ? (x = boxw) : x >= boxw ? (x = 0) : "";
+    //     ball.current.style.left = x + "px";
+    //     setTimeout(() => {
+    //       if (
+    //         !(
+    //           bottom >=
+    //           boxH +
+    //             Math.floor(
+    //               (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
+    //             )
+    //         )
+    //       )
+    //         ball.current.style.bottom = bottom + "px";
+    //     }, (duration * 0.8) / totalTravel);
+
+    //     bottom += Math.floor(
+    //       (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
+    //     );
+    //   } else {
+    //     console.log(
+    //       `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
+    //     );
+    //     clearInterval(animationId);
+    //     clearInterval(animationId1);
+    //   }
+    // }, (duration / totalTravel) * 1000);
   };
 
   return (
