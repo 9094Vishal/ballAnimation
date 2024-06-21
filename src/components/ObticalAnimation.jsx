@@ -1,27 +1,61 @@
 import React, { useEffect, useRef, useState } from "react";
-import { to } from "react-spring";
 
 const Anim = () => {
-  let x = 0;
-  let x2 = 0;
+  let left = 0;
   const [duration, setDuration] = useState(5);
   const [ballHeight, setBallHeight] = useState(20);
   const [ballWidth, setBallWidth] = useState(20);
   const [boxHeight, setBoxHeight] = useState(500);
   const [boxWidth, setBoxWidth] = useState(500);
-  const [obstacles, setObstacles] = useState([{}]);
+  const [obstacles, setObstacles] = useState([]);
+  const [obstacleLeftInput, setobstacleLeftInput] = useState(0);
+  const [obstacleBottomInput, setobstacleBottomtInput] = useState(0);
   let position = 0;
   let direction = 1;
   let bottom = 0;
   const ball = useRef(null);
-  const obstacle = useRef(null);
-
   let animationId = useRef(null);
-  let animationId1 = useRef(null);
   let start = new Date();
+
+  const handleObsticalLeftChange = (e) => {
+    setobstacleLeftInput(Number(e.target.value));
+  };
+  const handleObsticalBootmChange = (e) => {
+    setobstacleBottomtInput(Number(e.target.value));
+  };
+
+  const addObstical = (e) => {
+    e.preventDefault();
+
+    if (
+      obstacleLeftInput % ballHeight == 0 &&
+      obstacleBottomInput % ballHeight == 0
+    ) {
+      setObstacles((pr) => [
+        ...pr,
+        { left: obstacleLeftInput, top: obstacleBottomInput },
+      ]);
+      // position = obstacles.length;
+      setObstacles((pr) =>
+        pr.sort((a, b) => {
+          if (b.top === a.top) {
+            return a.left - b.left; // Ascending order for 'left'
+          }
+          return b.top - a.top; // Descending order for 'top'
+        })
+      );
+    } else {
+      alert("Obstical Value must be modulo by ball size");
+    }
+  };
   const startAnimation = () => {
-    start = new Date();
-    anim();
+    clearInterval(animationId);
+    if (obstacles.length >= duration) {
+      alert("Duration must be grater then Obsticals");
+    } else {
+      start = new Date();
+      anim();
+    }
   };
 
   const stopAnimation = () => {
@@ -29,9 +63,10 @@ const Anim = () => {
   };
 
   const resetAnimation = () => {
-    x = 0;
+    position = 0;
+    left = 0;
     bottom = 0;
-    ball.current.style.left = `${x}px`;
+    ball.current.style.left = `${left}px`;
     ball.current.style.bottom = `${bottom}px`;
     clearInterval(animationId);
   };
@@ -51,12 +86,6 @@ const Anim = () => {
   const onBallWidthChange = (e) => {
     setBallWidth(Number(e.target.value));
   };
-  //   useEffect(() => {
-  //     obstacle.current.style.left = "480px";
-  //     obstacle.current.style.bottom = "200px";
-  //     console.log(obstacle.current.style.left);
-  //     console.log(ball.current.style.left);
-  //   }, []);
 
   const anim = () => {
     // calculate box height and width
@@ -67,69 +96,48 @@ const Anim = () => {
     let totalMove = (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2);
     let ratio = (boxH * boxw) / ((boxH + boxw) / 2);
     let totalTravel = ratio / totalMove;
-    let totalInterwal = ((duration / totalTravel) * 1000) / totalTravel;
-    console.log("total move", totalMove);
-    console.log("total ratio", ratio);
-    console.log("total travel", totalTravel);
-    console.log("total interval", totalInterwal);
+    let totalInterwal =
+      (((duration - obstacles.length) / totalTravel) * 1000) / totalTravel;
+
     console.log("start time", start.toLocaleTimeString());
 
-    animationId1 = setInterval(() => {
-      x2 += direction * totalMove;
-      x2 <= 0 ? (direction = 1) : x2 >= boxw ? (direction = -1) : "";
-      console.log("loop times");
+    animationId = setInterval(() => {
+      left += direction * totalMove;
+      left <= 0 ? (direction = 1) : left >= boxw ? (direction = -1) : "";
+      let data = obstacles.filter((item) => boxH - item.top == bottom);
+      if (data)
+        for (let index = 0; index < data.length; index++) {
+          if (
+            (direction == 1 &&
+              left == data[index]?.left - ballWidth &&
+              bottom == boxH - data[index]?.top) ||
+            (direction == -1 &&
+              left == data[index]?.left + ballWidth &&
+              bottom == boxH - data[index]?.top)
+          ) {
+            clearInterval(animationId);
+            setTimeout(() => {
+              // position++;
+              anim();
+            }, 1000);
+          }
+        }
 
-      obstacle.current.style.left = x2 + "px";
+      ball.current.style.left = left + "px";
 
-      if (x2 <= 0 || x2 >= boxw) {
+      if (left <= 0 || left >= boxw) {
         if (bottom >= boxH) {
           console.log(
             `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
           );
-          clearInterval(animationId1);
+          clearInterval(animationId);
           return;
         } else {
           bottom += totalMove;
-          obstacle.current.style.bottom = bottom + "px";
+          ball.current.style.bottom = bottom + "px";
         }
       }
     }, totalInterwal);
-
-    // ball.current.style.transition = `bottom ${
-    //   (duration * 0.2) / totalTravel
-    // }s ease-in-out ${(duration * 0.8) / totalTravel}s, left ${
-    //   (duration * 0.8) / totalTravel
-    // }s ease-in-out`;
-
-    //red ball
-    // animationId = setInterval(() => {
-    //   if (bottom <= boxH) {
-    //     x == 0 ? (x = boxw) : x >= boxw ? (x = 0) : "";
-    //     ball.current.style.left = x + "px";
-    //     setTimeout(() => {
-    //       if (
-    //         !(
-    //           bottom >=
-    //           boxH +
-    //             Math.floor(
-    //               (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-    //             )
-    //         )
-    //       )
-    //         ball.current.style.bottom = bottom + "px";
-    //     }, (duration * 0.8) / totalTravel);
-
-    //     bottom += Math.floor(
-    //       (ballHeight * ballWidth) / ((ballHeight + ballWidth) / 2)
-    //     );
-    //   } else {
-    //     console.log(
-    //       `start: ${start.toLocaleTimeString()}, end: ${new Date().toLocaleTimeString()}`
-    //     );
-    //     clearInterval(animationId);
-    //     clearInterval(animationId1);
-    //   }
-    // }, (duration / totalTravel) * 1000);
   };
 
   return (
@@ -143,11 +151,20 @@ const Anim = () => {
           className={`ball`}
           style={{ height: `${ballHeight}px`, width: `${ballWidth}px` }}
         ></div>
-        <div
-          ref={obstacle}
-          className="obstacle"
-          style={{ height: `${ballHeight}px`, width: `${ballWidth}px` }}
-        ></div>
+        {obstacles.map((item, ind) => {
+          return (
+            <div
+              key={ind}
+              className="obstacle"
+              style={{
+                height: `${ballHeight}px`,
+                width: `${ballWidth}px`,
+                left: `${item?.left}px`,
+                top: `${item?.top}px`,
+              }}
+            ></div>
+          );
+        })}
       </div>
       <div className=" input-helper">
         <div className="btn">
@@ -208,6 +225,34 @@ const Anim = () => {
             />
           </label>
         </div>
+        <form action="">
+          <div className="ball-helper">
+            <label htmlFor="bheight">
+              Obstical x:
+              <input
+                name="bheight"
+                type="number"
+                value={obstacleLeftInput}
+                onChange={handleObsticalLeftChange}
+                placeholder="Enter Obstical left"
+              />
+            </label>
+
+            <label htmlFor="bwidth">
+              Obstical y:
+              <input
+                name="bwidth"
+                type="number"
+                value={obstacleBottomInput}
+                onChange={handleObsticalBootmChange}
+                placeholder="Enter Obstical bottom"
+              />
+            </label>
+            <button type="button" onClick={addObstical}>
+              Add
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
